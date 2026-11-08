@@ -269,3 +269,18 @@ revert device state after experiments; logs must carry RECON identity.
   DDDD0001/2/3 + LegacyPoster AAAA1111/BBBB1111 + mario 5D800000 remnants.
   Cleanup script when desired: rm DDDD*, BBBB2222, CCCC4444, AAAA1111,
   BBBB1111, 5D800000 (+ restore ProviderInfo/registry if needed).
+
+## Session-1 FINAL: ATX snapshot container fully mapped
+- Chunk layout of SNAPSHOT .atx (from offset 8): `HEAD` (84B: u32×3 zeros,
+  0x93b0, 0x1908, **337×600 dims**, 1,0,1,1,1,0,1, 16B digest, 3, 5) →
+  `FILL` (16264B — sparse solid-color fill region) → `astc` (245780B —
+  ASTC payload WITHOUT standard file header) → `END` (len 0).
+- Generator task reduced to: understand FILL/astc interplay (sparse encoding
+  — which regions are filled vs compressed; the ABrake27 ImageIO ATX reader
+  knowledge covers the parse side), then write the container.
+- Tooling ready: `astc-encoder-py` pip package installed and working
+  (ASTCImage bindings); Pillow installed; preview art source = SerStars
+  previews/custom/*.gif frames or pack CA assets composite.
+- astc payload 245780B ≠ naive full-frame blocks → confirms sparse scheme.
+- All samples staged: research/snapshot/emoji_snapshot.atx (pristine), device
+  emoji clones alive as proof.
