@@ -20,7 +20,7 @@ static void L(NSString *fmt, ...) {
     fprintf(stderr, "%s\n", line.UTF8String);
     if (gLogPath) {
         NSFileHandle *fh = [NSFileHandle fileHandleForWritingAtPath:gLogPath];
-        if (!fh) { [line dataUsingEncoding:NSUTF8StringEncoding] writeToFile:gLogPath atomically:YES]; }
+        if (!fh) { [[line dataUsingEncoding:NSUTF8StringEncoding] writeToFile:gLogPath atomically:YES]; }
         else { [fh seekToEndOfFile]; [fh writeData:[[line stringByAppendingString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]]; [fh closeFile]; }
     }
 }
@@ -43,20 +43,20 @@ static void recon(void) {
 }
 
 // ---------- gestalt ----------
-static NSDictionary *mgLoad(NSString **err) {
+static NSDictionary *mgLoad(NSError **err) {
     NSData *d = [NSData dataWithContentsOfFile:MG_PATH];
-    if (!d) { *err = @"cannot read MG plist (root?)"; return nil; }
+    if (!d) { *err = [NSError errorWithDomain:@"tendietool" code:1 userInfo:@{NSLocalizedDescriptionKey: @"cannot read MG plist (root?)"}]; return nil; }
     NSError *e = nil;
     id p = [NSPropertyListSerialization propertyListWithData:d options:NSPropertyListMutableContainersAndLeaves format:NULL error:&e];
-    if (!p) { *err = e.localizedDescription ?: @"plist parse error"; return nil; }
+    if (!p) { if (e) { *err = e; } else { *err = [NSError errorWithDomain:@"tendietool" code:4 userInfo:@{NSLocalizedDescriptionKey: @"plist parse error"}]; } return nil; }
     return p;
 }
-static BOOL mgSave(id plist, NSString **err) {
+static BOOL mgSave(id plist, NSError **err) {
     NSData *d = [NSPropertyListSerialization dataWithPropertyList:plist format:NSPropertyListBinaryFormat_v1_0 options:0 error:nil];
-    if (!d) { *err = @"plist serialize failed"; return NO; }
+    if (!d) { *err = [NSError errorWithDomain:@"tendietool" code:2 userInfo:@{NSLocalizedDescriptionKey: @"plist serialize failed"}]; return NO; }
     // atomic: write temp, copy metadata-preserving
     NSString *tmp = [MG_PATH stringByAppendingString:@".tt_tmp"];
-    if (![d writeToFile:tmp atomically:YES]) { *err = @"write tmp failed"; return NO; }
+    if (![d writeToFile:tmp atomically:YES]) { *err = [NSError errorWithDomain:@"tendietool" code:3 userInfo:@{NSLocalizedDescriptionKey: @"write tmp failed"}]; return NO; }
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm removeItemAtPath:MG_PATH error:nil] ||
         ![fm moveItemAtPath:tmp toPath:MG_PATH error:err]) {
@@ -66,7 +66,7 @@ static BOOL mgSave(id plist, NSString **err) {
 }
 static int cmdGestalt(NSArray *args) {
     NSString *sub = args.count ? args[0] : @"dump";
-    NSString *err = nil;
+    __autoreleasing NSError *err = nil;
     if ([sub isEqualToString:@"backup"]) {
         NSFileManager *fm = [NSFileManager defaultManager];
         NSString *dst = [MG_PATH stringByAppendingString:@".tt_backup"];
@@ -84,7 +84,7 @@ static int cmdGestalt(NSArray *args) {
         L(@"[+] restored from backup"); return 0;
     }
     NSMutableDictionary *p = [mgLoad(&err) mutableCopy];
-    if (!p) { L(@"[X] %@", err); return 1; }
+    if (!p) { L(@"[X] %@", err.localizedDescription); return 1; }
     NSMutableDictionary *extra = p[@"CacheExtra"];
     if (![sub isEqualToString:@"dump"] && !extra) {
         extra = [NSMutableDictionary dictionary]; p[@"CacheExtra"] = extra;
@@ -144,7 +144,7 @@ static int runUnzip(NSString *zip, NSString *dst) {
 }
 static int cmdTendie(NSArray *args) {
     NSString *sub = args.count ? args[0] : @"inspect";
-    NSString *err = nil;
+    __autoreleasing NSError *err = nil;
     if ([sub isEqualToString:@"inspect"] && args.count >= 2) {
         NSString *tmp = [NSTemporaryDirectory() stringByAppendingPathComponent:@"tt_inspect"];
         [[NSFileManager defaultManager] removeItemAtPath:tmp error:nil];
