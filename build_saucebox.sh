@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build_SauceBox.sh — Linux cross-compile of src/SauceBox.m → SauceBox
+# build_SauceBox.sh — Linux cross-compile of src/saucebox.m → SauceBox
 # Same pipeline as ABrake27 build_probe.sh (clang → ld64.lld → ldid).
 # Output: standalone arm64 CLI — push to device:
 #   scp SauceBox root@<iphone>:/usr/bin/  (via Dopamine ssh)
@@ -16,7 +16,7 @@ have ld64.lld || { echo "[x] ld64.lld missing"; exit 1; }
 
 mkdir -p "$ROOT/build"
 clang -c -target arm64-apple-ios"$MINIOS" -isysroot "$SDK" \
-    -fobjc-arc -fmodules -O2 -o "$ROOT/build/SauceBox.o" "$ROOT/src/SauceBox.m"
+    -fobjc-arc -fmodules -O2 -o "$ROOT/build/SauceBox.o" "$ROOT/src/saucebox.m"
 
 ld64.lld -arch arm64 -platform_version ios "$MINIOS" 16.5 \
     -syslibroot "$SDK" \
