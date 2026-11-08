@@ -1,5 +1,23 @@
 # PosterBoard tendies on iOS 16.7.16 — research log (2026-11-08, session 1)
 
+> **STATUS 2026-11-09: this is a historical log. Several conclusions below were
+> corrected by sessions 2–5 — see `docs/TENDIES16_MECHANISM.md` (current
+> reference) and `HANDOFF.md`.**
+>
+> Corrections in short:
+> - "Gallery ≠ directory scan" — correct, and now fully explained: the gallery
+>   is an `ATXFaceGalleryConfiguration` catalog; tiles appear only for items in
+>   it. We can now **push items** into that catalog via PRSService XPC with
+>   entitlements (see `src/prstool2.m`).
+> - "Format compatibility confirmed" — **wrong**. 16.7.16 has no
+>   `ParameterizedCA` support at all (string absent from the whole dyld cache);
+>   packs are iOS 17 format and need conversion to `LayeredAnimation`.
+> - "content-swap did not re-render / RuntimeSnapshotMetadata is the gate" —
+>   not the gate; the apply path builds configurations from *registered*
+>   descriptors (native ones), not from hand-placed descriptor directories.
+> - ProviderInfo ordering is **daemon-derived**: manual UID appends are
+>   discarded on respring (verified).
+
 ## Confirmed (verified on iPhone10,5 / 16.7.16 20H392, root via Dopamine)
 - PosterBoard store: `/var/mobile/Containers/Data/Application/<PB-uuid>/Library/
   Application Support/PRBPosterExtensionDataStore/59/Extensions/<provider>/`

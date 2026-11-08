@@ -1,6 +1,43 @@
 # Mal016 HANDOFF — PosterBoard tendies on iOS 16.7.16 (for next AI session)
 
+> ## ⚠️ ЧИТАЙ ЭТО ПЕРВЫМ — состояние на 2026-11-09 (конец сессии 5)
+>
+> **Текущая техническая справка:** `docs/TENDIES16_MECHANISM.md`.
+> Ниже в этом файле — хронология сессий 1–4 (многое устарело/опровергнуто,
+> правки отмечены в самих разделах и в шапке POSTERBOARD_16_RESEARCH.md).
+>
+> **✅ Работает (проверено на телефоне, визуально):**
+> - Инъекция плитки в галерею: `PRSService` (PosterBoardServices.framework,
+>   BSService `com.apple.posterboardservices`) + entitlements
+>   (`src/prs.entitlements`) → `pushPosterGalleryUpdate:`; элемент живёт в
+>   Duet-стриме faceGallery и переживает респринг.
+> - Арт плитки: локальный дескриптор WK + `SNAPSHOT_GALLERY-*.atx`,
+>   сгенерированный на устройстве через ImageIO (`src/atxwrite.m`).
+> - Инструменты: `src/prstool2.m` (fetch/dump/push/additem), `src/atx2png.m`.
+>
+> **⛔ Блокер №1 (главный):** «Применить» создаёт конфигурацию не из нашего
+> дескриптора. `ProviderInfo.plist`/ordering — вычисляемый, демон его
+> перезаписывает; вручную положенные дескрипторы не регистрируются.
+> **Следующая задача:** реверс регистрации дескрипторов
+> (`PBFPosterExtensionDataStore` / `PBFPosterDescriptorStoreCoordinator`,
+> дизасм `/tmp/pb.dis`) или data-store XPC (`refreshConfigurations`,
+> `refreshConfigurationSnapshot` — entitlement'ы уже есть).
+>
+> **⛔ Блокер №2:** паки — iOS 17 `ParameterizedCA`; в 16.7.16 этой строки
+> нет вообще во всём dyld-кэше. Конвертер `tools/convert_tendie.py` (v1,
+> `ParameterizedCA` → три `.ca` + native `index.xml`) написан, но ещё не
+> проверен — проверять только после блокера №1 (минимальный CA-тест).
+>
+> **Откат галереи:** восстановить Duet-стрим из
+> `research/duet_facegallery_pristine.bin` + очистить `GalleryCache`,
+> респринг; проверить `prstool2 fetch` (не должно быть `MAL…`).
+>
+> **Подпись инструментов:** только на устройстве
+> (`ldid -Ssrc/prs.entitlements /var/jb/usr/bin/prstool2`), иначе AMFI
+> убивает процесс (Killed: 9). Бинарники — только в `/var/jb`, не в `/var/tmp`.
+
 ## Context
+
 Goal: make community `.tendies` wallpaper packs work on iPhone 8+ (iPhone10,5),
 iOS 16.7.16 (20H392), jailbroken (Dopamine, root). Owner: Ivan. Tooling: Mal016
 CLI (this repo, cross-compiled on Linux, deployed at /var/jb/usr/bin/Mal016).
