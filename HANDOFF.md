@@ -298,3 +298,14 @@ revert device state after experiments; logs must carry RECON identity.
 - Cross-link: our ABrake27 decompile atx_validate_1878d064c.c (0x54 chunk,
   pixelDepth checks, watermark-'U' popcount) = the parse side of this same
   container. Combine to write the writer.
+
+## Parser round result (same night)
+- 15361 blocks counted; **15361 is PRIME** → payload is NOT a flat frame of
+  blocks: it is an indexed/sparse container (sub-structure with per-block
+  offsets or a tree). ASTC data inside looks real (weight classes distributed,
+  2610 zero-blocks = skip markers, repeated fcfdff… blocks = constant-color).
+- Grid inference failed for all standard footprints → next: parse payload as
+  [sub-record table] — check for u32 offset table at chunk start or per-block
+  2-byte indices; and cross-reference ABrake27 atx_validate decompile
+  (atx_validate_1878d064c.c) which parses this exact container — the writer
+  semantics are IN that function, one careful Ghidra read finishes it.
