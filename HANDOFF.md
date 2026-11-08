@@ -252,3 +252,20 @@ revert device state after experiments; logs must carry RECON identity.
   Photos provider staticdescriptors carry SNAPSHOT_GALLERY_HERO-noHeader .atx.
 - Device state: emoji clone BBBB2222 LEFT IN PLACE (visible dup tile, proves
   mechanism); LegacyPoster stack AAAA1111/BBBB1111 left (harmless).
+
+## ✅✅✅ MULTI-ART IMPORT CONFIRMED (Ivan visual confirmation)
+- Cloned 3 DISTINCT emoji descriptors (DDDD0001/2/3 = different arts) →
+  **all 3 appeared as distinct tiles in the gallery**.
+- **Mechanism 100% proven: descriptor (any provider) + embedded
+  SNAPSHOT_GALLERY .atx = gallery tile. Batch local import works. No server,
+  no registry, no configuration, no ProviderInfo needed.**
+- The entire emoji gallery = "packs with .atx snapshots". Photos SNAPSHOT_HERO
+  = same pattern. WallpaperKit = server-catalog exception (renders live).
+- **Remaining work for tendies-on-16:** snapshot GENERATOR — render pack
+  preview → ASTC 337×600 → ATX container (mimic emoji_snapshot.atx byte
+  layout; HEAD carries dims+16B digest) → descriptor with snapshot → tile.
+  Then Mal016 `tendie import` = fully working on iOS 16.7.16, first-public.
+- Device current state (all harmless): emoji clones BBBB2222, CCCC4444,
+  DDDD0001/2/3 + LegacyPoster AAAA1111/BBBB1111 + mario 5D800000 remnants.
+  Cleanup script when desired: rm DDDD*, BBBB2222, CCCC4444, AAAA1111,
+  BBBB1111, 5D800000 (+ restore ProviderInfo/registry if needed).
