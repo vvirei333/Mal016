@@ -284,3 +284,17 @@ revert device state after experiments; logs must carry RECON identity.
 - astc payload 245780B ≠ naive full-frame blocks → confirms sparse scheme.
 - All samples staged: research/snapshot/emoji_snapshot.atx (pristine), device
   emoji clones alive as proof.
+
+## Session-1 close: ATX sparse layout measured
+- astc chunk = u32 245776 (=len-4) + **15361 ASTC blocks ×16B**. FILL chunk in
+  the emoji sample = all zeros (fill unused in this art).
+- HEAD (84B @0x10): 0000×3, 0x93b0=37808, 0x1908=6408, **337×600**, flags
+  1,0,1,1,1,0,1, then 16B watermark-digest region (06ea6ba8… — NOT 'U's, so
+  the ImageIO watermark check does NOT apply to snapshot .atx), tail 3,5.
+- Block-count math vs 337×600 (any standard footprint) doesn't hit 15361
+  directly → payload likely holds 2+ planes (lock/home variants) or @3x
+  scaling — next session: resolve by block-pattern analysis (ASTC void-extent
+  blocks 0xFC01... are identifiable).
+- Cross-link: our ABrake27 decompile atx_validate_1878d064c.c (0x54 chunk,
+  pixelDepth checks, watermark-'U' popcount) = the parse side of this same
+  container. Combine to write the writer.
