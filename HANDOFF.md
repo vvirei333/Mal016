@@ -109,3 +109,19 @@ revert device state after experiments; logs must carry RECON identity.
   rendering likely uses per-instance snapshots keyed by the SERVER instance
   UUIDs (B18666BC-style), not on-disk UUIDs. Revisit only with a full
   PaperBoard render-pipeline RE.
+
+## Session-1 night addendum (black-box exhausted)
+- Searched /var/mobile/Library, SystemGroup, Preferences, AppGroups for ANY
+  reference to native descriptor UUID (0A314BD1…) — **zero hits outside the
+  Duet stream**. Wallpaper assignment state is not stored in user-space files
+  we can find; likely inside SpringBoard's real data container (identify via
+  bundle scan, not SplashBoard) or a daemon-private store.
+- SpringBoard container found at 014419A3-… was the SplashBoard app (wrong).
+  Identify real SB data container via /var/containers/Bundle/Application
+  SpringBoard.app bundle-id match next time.
+- **Next session = full RE pass (Ghidra/pyghidra):** PosterKit (1.8MB) +
+  PosterBoardServices (527KB) already extracted in
+  ABrake27/mcm_research/pb16716/. Targets: (1) PRSServer fetchGallery → where
+  server catalog is persisted and how items resolve to disk contents;
+  (2) PRPoster instance creation from ATXFaceGalleryItem; (3) any
+  entitlement/trust check gating descriptor adoption.
