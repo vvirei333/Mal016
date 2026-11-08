@@ -125,3 +125,24 @@ revert device state after experiments; logs must carry RECON identity.
   server catalog is persisted and how items resolve to disk contents;
   (2) PRPoster instance creation from ATXFaceGalleryItem; (3) any
   entitlement/trust check gating descriptor adoption.
+
+## Session-1 late-night: THE missing link located
+- `configurations/<uuid>/identifierURL.suggestionMetadata.plist` =
+  PRPosterSuggestionMetadata{ATXFaceGalleryItem} — these are the SYSTEM'S
+  OUTPUT of provisioning (storeSuggestionMetadataForPath:), not input.
+- The Duet stream (faceGallery/local/815610501801543, 8MB) = **the gallery
+  catalog itself**: fixed-size-ish records (~2.1KB) of
+  [variant-UUID][identifier e.g. 7400.DYNAMIC][provider][...fields], header
+  0x165e8 (count/offsets). 40 records for 7400.DYNAMIC across variants.
+- Full chain now known: server catalog → Duet stream → GalleryCache → tiles.
+  To add a tile: INSERT a record into the stream (requires parsing the record
+  layout: header counts + per-record TLV) AND place a matching descriptor in
+  the store (normalization: productTypes, 414w names, hex UUID, galleryOptions).
+- Repro assets on PC: /tmp/rsn/duet_facegallery(.bak) (8MB stream),
+  /tmp/rsn/native_galleryOptions, /tmp/rsn/wk_sugg.plist (cloned native item),
+  /tmp/rsn/mario_galleryOptions; device: /var/tmp/mz (unpacked mario),
+  /var/tmp/go_mario. Device currently has our descriptor 5D800000 + our
+  configuration 11111111-… (harmless; remove when done: rm -rf those dirs,
+  restore ProviderInfo from /tmp/pbpull/wk_provider.plist).
+- Streams to reverse next: Duet record format (start: hexdump first 2 records,
+  find count field at header, diff records of same provider to get field map).
