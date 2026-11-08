@@ -41,3 +41,22 @@ native 7400 v81 contents did not re-render either. Suspects (in order):
 ## Hygiene rules (from project scope)
 Static analysis and device- owner experiments only; no exploit development;
 revert device state after experiments; logs must carry RECON identity.
+
+## Session-1 late addendum (same day)
+- Native 46349938 has versions 78-81 but ONLY v81 has contents/ (others empty).
+  Swapping contents in ALL versions did NOT change the gallery tile art.
+- Purged MappedImageCache/Wallpaper + WallpaperColorBoxesCache + GalleryCache —
+  no effect on tile rendering. Tile thumbnails are NOT rendered live from
+  contents/ on 16.7.16.
+- Distinctive file: native contents contain
+  `com.apple.posterkit.provider.contents.galleryOptions`; packs ship
+  `...otherMetadata.plist` instead. Candidate gate.
+- Device RESTORED to pristine state (4 native descriptors verified, caches
+  cleared, ProviderInfo original). SuperMarioBros_fixed.tendies (productTypes
+  patched) remains in Media + PC /tmp/mal0push/.
+- Next session top probes: (1) diff native vs pack Wallpaper.plist +
+  galleryOptions vs otherMetadata semantics (pull both, plistlib);
+  (2) grep PaperBoard/WallpaperKit binaries in dyld cache for
+  galleryOptions/ATXFaceGallery keys; (3) idevicesyslog during gallery open
+  filtered 'ATX|PaperBoard|snapshot|thumbnail'; (4) check whether tile art
+  comes from Duet faceGallery preview assets, not the store.
