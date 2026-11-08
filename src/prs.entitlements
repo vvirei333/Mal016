@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.posterboardservices</key>
+	<true/>
+	<key>com.apple.posterboardservices.services</key>
+	<true/>
+	<key>com.apple.posterboardservices.dataModel</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.refreshConfigurations</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.deleteConfigurations</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.deleteDescriptors</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.refreshConfigurationSnapshot</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.mutateSwitcherConfiguration</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.accessSwitcherConfiguration</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.mutateSwitcherFocusConfiguration</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.accessSwitcherFocusConfiguration</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.deleteDataStore</key>
+	<true/>
+	<key>com.apple.posterboardservices.data-store.migration</key>
+	<true/>
+	<key>com.apple.posterboardservices.active-wallpaper-observer</key>
+	<true/>
+</dict>
+</plist>

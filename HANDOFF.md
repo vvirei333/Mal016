@@ -399,3 +399,60 @@ B. **PRS XPC client:** `com.apple.posterboardservices` (PRSService) exposes
    tendie poster even if the gallery tile is still missing.
 C. **MITM the gallery fetch** (server impersonation): deepest, network+turst
    required; only if A/B fail.
+
+# 🏆 SESSION 3 (2026-11-09, same night) — GALLERY INJECTION SOLVED VIA PRSService XPC
+
+## The wall that was actually there
+It was never the snapshot format. Local descriptor/snapshot/contents placement does
+nothing because the *gallery item* must exist in the PRS catalog. Once the item is
+pushed, a local descriptor with a matching `descriptorIdentifier` + a valid
+`SNAPSHOT_GALLERY-*.atx` renders perfectly. Verified visually: TEST1 art tile in
+Collections, tap → apply → config created + selected.
+
+## Working mechanism (all verified on iPhone10,5 20H392)
+1. **Gallery item injection** — `PRSService` (PosterBoardServices.framework, BSService
+   mach `com.apple.posterboardservices`) accepts
+   `pushPosterGalleryUpdate:completion:` from a root process **signed with entitlements**
+   (client is otherwise rejected: "XPC error received on message reply handler").
+   Working entitlement set: `com.apple.posterboardservices`,
+   `com.apple.posterboardservices.services`, `com.apple.posterboardservices.dataModel`,
+   `com.apple.posterboardservices.data-store` (+ all `data-store.*` sub-keys),
+   `com.apple.posterboardservices.active-wallpaper-observer`.
+   Tool: `src/prstool2.m` (+ `src/prs.entitlements`, `build_prstool.sh`).
+   Commands: `fetch` (→/var/tmp/gallery.plist), `additem <plist> <SLUG>` (duplicates a WK
+   item, sets `descriptorIdentifier=SLUG.DYNAMIC`, new UUID), `push <plist>`.
+   Push **persists** in the Duet faceGallery stream and survives respring.
+   ⚠️ push is additive/merge — pushing the old config back does NOT remove items;
+   revert = restore the stream byte-copy `/var/tmp/duet_backup` + clear GalleryCache.
+2. **Tile art** = `SNAPSHOT_GALLERY-withHeader-PROPERTIES<sha>.atx` inside
+   `.../descriptors/<UUID>/versions/<latest>/` of
+   `com.apple.WallpaperKit.CollectionsPoster`. Our ImageIO-written 4x4 raster ATX is
+   accepted (system's hardware reader handles it). Generate with `atxwrite`.
+3. **Descriptor**: UUID dir under the WK provider, `com.apple.posterkit.provider.descriptor.identifier`
+   = slug, `providerInfo.plist` (copy native), `versions/1/contents/<...>.wallpaper` +
+   `supplements/0`.
+4. **Wallpaper rendering** on apply = the WK extension renders descriptor contents into
+   `configurations/<uuid>/versions/0/{contents,RuntimeSnapshot-lock/home.atx}`;
+   `SelectedConfigurationIdentifier.plist` confirms selection.
+
+## Remaining blocker (the real "tendies on 16" problem)
+Tendies packs are **iOS 17 format**: `Wallpaper.plist` →
+`assets.lockAndHome.default.type = "ParameterizedCA"`, `family=Marble`, `version=6`,
+`logicalScreenClass=any`, single `wallpaper.ca`. iOS 16.7.16's WallpaperKit only
+renders its native types (`LayeredAnimation` = Background/Foreground/Floating .ca,
+`Stripe`, `Bokeh`, `Gradient`, …). Applying a tendie creates a config and renders a
+RuntimeSnapshot, but the lock screen shows only the parameterized base gradient
+(hills/emojis/assets missing). Patching `version=1` + `logicalScreenClass=414w-736h@3x~iphone`
+did not help.
+→ Next session: convert ParameterizedCA → LayeredAnimation (split the pack's CA scene
+into background/foreground/floating `.ca` layers + Wallpaper.plist with
+`backgroundAnimationFileName`/`foregroundAnimationFileName`/`floatingAnimationFileNameKey`),
+or obtain 16-format packs. Everything else in the pipeline is proven and scripted.
+
+## Device state at close
+Gallery stream + GalleryCache restored (no MAL items; verified `fetch` = 28951 B, 0 hits).
+Our test descriptors (AAAA0160/0161/0162) removed. Note: the currently selected lock
+screen config is our test config EBA81E13 (it renders the gradient) — user may switch
+wallpaper back manually. Artifacts: `/var/tmp/prstool2`, `/var/tmp/atxwrite`,
+`/var/tmp/atx2png`, `/var/tmp/gallery_fetched.plist` (original 28951 B config),
+`/var/tmp/snap_rolling.atx`, `/var/tmp/duet_backup` (pristine stream).
