@@ -456,3 +456,49 @@ screen config is our test config EBA81E13 (it renders the gradient) — user may
 wallpaper back manually. Artifacts: `/var/tmp/prstool2`, `/var/tmp/atxwrite`,
 `/var/tmp/atx2png`, `/var/tmp/gallery_fetched.plist` (original 28951 B config),
 `/var/tmp/snap_rolling.atx`, `/var/tmp/duet_backup` (pristine stream).
+
+# SESSION 5 (2026-11-09 ~01:20) — apply-path findings; what to fix next
+
+## Verified tonight (after the injection breakthrough)
+- Gallery item push + snapshot tile: WORKS (reproducible).
+- Applying a pushed item does **not** reliably produce a configuration from our
+  descriptor. In the cases where a config WAS created (B44AF6BF, EBA81E13,
+  FE388149, EE880B47), its `versions/0/contents` always matched a **native**
+  descriptor (7365.Green / 7400.WWDC_2022), even when the applied item's
+  `descriptorIdentifier` was our slug and `identifier` was set to our descriptor
+  UUID. => descriptor→config resolution ignores our hand-placed descriptor dir.
+- `ProviderInfo.plist` `kProactiveDynamicPosterDescriptorOrdering` is **derived**
+  and rewritten by the daemon on respring: manual UID appends of our UUIDs are
+  discarded (verified: appended AAAA0164/0165 → gone after respring; list = the
+  4 native UUIDs).
+- Local content swap on a native descriptor (7420 → versions/185 with our
+  minimal CA) did not change what was applied (still stock; no new config even
+  created while v185 was present — latest-version validity may be checked).
+- Minimal 16-style CA built from the native 7400 Background template (single
+  CALayer + PNG `contents`, full index.xml, states) does not render via this
+  path — but it was never actually driven by a config created from our
+  descriptor, so the CAML question is still OPEN, not answered.
+
+## The real remaining target (single question)
+**How does 16.7.16 register a descriptor so that "apply" creates a config from
+it?** Native descriptors are in ProviderInfo ordering; ours are not, and the list
+is daemon-generated. Next session:
+1. Reverse `PBFPosterExtensionDataStore`/`PBFPosterDescriptorStoreCoordinator`
+   (PosterBoard.framework, /tmp/pb.dis available) for the descriptor-discovery /
+   `reloadDescriptors` path, or call the PRSServer data-store XPC ops
+   (`refreshConfigurations`, `refreshConfigurationSnapshot`, maybe a descriptor
+   reload) with our entitlements — `com.apple.posterboardservices.data-store.refreshConfigurations`
+   is already in our entitlements file.
+2. Then re-test the minimal CA (script pattern in this session log: native
+   7400 Background template + one PNG contents layer) — that isolates the CAML
+   dialect question from the registration question.
+3. Only then revisit ParameterizedCA conversion (16 has no `ParameterizedCA`
+   string at all; `LayeredAnimation` is the native CA type).
+
+## Device state at close
+Stream restored from PC copy (facegallery.bin, 0 MAL hits), GalleryCache restored
+(28951 B, no MAL items; verified by fetch), descriptor v185 removed, test
+descriptors cut. /var/tmp/duet_backup and /var/tmp/s2backup were purged by iOS —
+the pristine stream lives in this repo? NO: PC copy is /tmp/mal0s2/facegallery.bin
+(may be cleaned on reboot) — **copy it into the repo** if still present.
+Lock screen may still show a test config; set a stock wallpaper manually.
