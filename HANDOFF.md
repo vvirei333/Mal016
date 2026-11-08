@@ -190,3 +190,23 @@ revert device state after experiments; logs must carry RECON identity.
   exact tile-registration problem we mapped. Reddit JSON blocked from PC;
   use different UA/proxy or check manually.
 - Everything else (Nugget/Pocket-Poster/Cowabunga) = iOS 17+ only.
+
+## Session-1 CLOSE: instance registry + content-on-demand = FINAL ANSWER
+- **PosterConfigurationCache** (single file, /var/mobile/Library/DuetExpertCenter/)
+  = NSKeyedArchiver array of ATXPosterConfiguration records: {posterUUID =
+  configuration-folder UUID, galleryItem = ATXFaceGalleryItem embed,
+  extensionBundleIdentifier, font, active, selected, complications}. THIS is
+  the instance registry (9 records = current lock-screen wallpaper slots).
+- Key finding: configuration 0FE734F1 references descriptor identifier
+  7DBF540C that has **ZERO bytes on disk** (global /var search). Poster
+  content is fetched from the server ON SELECTION. The gallery catalog is
+  fully server-centric on iOS 16.x: local descriptor placement cannot create
+  tiles, and installed-poster content lives nowhere locally until used.
+- **Conclusion (high confidence):** on iOS 16.x, third-party tendies via the
+  PosterBoard pipeline require impersonating the server provisioning flow
+  (MITM of the gallery fetch / asset download) — no local-only injection
+  path exists. This is why Tendies16 (WIP) must be doing something else
+  entirely (likely rendering its own posters outside PosterKit, or hijacking
+  the extension). When it ships — reverse immediately.
+- Device PRISTINE (registry, ProviderInfo, descriptors, configurations,
+  caches all restored; respring done). All backups intact.
