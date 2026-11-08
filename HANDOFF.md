@@ -331,3 +331,71 @@ Session 1 (this file's author) is DONE; user continues with a fresh AI.
   by us); exploits are out of scope (analysis/verification only).
 Good luck. — Session 1 (GLM-5.3-Flash)
 p.s. session-2: последний коммит сессии-1 = a773f4a. Всё выше — проверенные факты.
+
+# ⛔ SESSION 2 (2026-11-09 night) — SNAPSHOT THEORY FALSIFIED; GALLERY IS CATALOG-DRIVEN
+
+## TL;DR for the next session
+**Do not repeat the "descriptor + .atx snapshot = gallery tile" plan.** It is wrong.
+Tested exhaustively on hardware tonight with visual confirmation (screenshots pulled
+from DCIM). Local placement of descriptors/snapshots/contents does **not** add or
+change gallery tiles on 16.7.16. The old "snapshot breakthrough" was a FALSE POSITIVE:
+the 3 identical tennis tiles Ivan saw are the **server catalog's own 3 `tennis.DYNAMIC`
+items** (GalleryCache lists 15 Emoji items incl. tennis ×3, spacethefinalfrontier ×2,
+spicy ×2). Session-1's "DDDD0001/2/3 = distinct arts appeared" clones were
+spicy/spacethefinalfrontier/hero — all of which already exist ×1-2 in the catalog.
+
+## What was measured (all on device, iPhone10,5 20H392, camera-confirmed)
+1. Clone emoji descriptor → new UUID (F1F10001) + .atx replaced with a generated
+   TEST1 image → **no new tile**; tile count unchanged.
+2. Replaced the .atx of the native tennis descriptor 10A4C668 → **no tile change**.
+3. Replaced .atx of WK descriptors 0A314BD1 (7420) and 0C1D6A53 (5010) → **no change**.
+4. Created `versions/147` inside 0A314BD1 with contents copied from 7365 (Green) →
+   **no change**; meanwhile the server itself appended versions 148/149/150
+   (content-only, same Clownfish) — the store is actively server-synced.
+5. Injected a 5th item into `GalleryCache/*.plist` (NSKeyedArchiver surgery:
+   copied the 7400 item, set descriptorIdentifier 5010.DYNAMIC, appended UID) →
+   **no 5th tile**; the cache is not a local-injection input (or is regenerated).
+6. Emoji tiles do not read the descriptor store: 3 tennis tiles stayed identical
+   after replacing the only local "tennis" descriptor's snapshot.
+→ Gallery rows/tiles and their art are produced from the catalog items
+  (identifier + descriptorIdentifier + extension bundle) — likely rendered by the
+  provider extension from its own catalog/asset knowledge, not from PRB store files.
+  Local store = poster *instances*; catalog = server/PRS.
+
+## Tool that DOES work (kept in repo)
+- `src/atxwrite.m` + `build_atxwrite.sh`: on-device **ATX writer** via ImageIO
+  (`CGImageDestinationCreateWithURL(..., CFSTR("com.apple.atx"), ...)`).
+  Verified round-trip: PNG 337×600 → .atx → decoded back pixel-perfect.
+  Must be installed under `/var/jb/usr/bin` (Dopamine trust cache rejects `/var/tmp`).
+- Measured ImageIO-written ATX layout:
+  magic `AAPL\r\n\x1a\n`; chunks `[u32 len][4cc tag][payload]`:
+  `HEAD` 0x54 (ver=1, const 0x93b0, 0x1908, w, h, flags 1,0,1,1,0,0,1,
+  wm = `'U'×16`, 1, 5) → `FILL` (small/zero) → `ASTC` (u32 bytes + 16-byte
+  **4x4 ASTC blocks in plain raster order**, count = ceil(w/4)*ceil(h/4)) → `END `.
+- Native (server-delivered) snapshot differs: lowercase `astc` tag, blocks padded
+  to 128-px tiles (32×32 blocks; e.g. 337×600 → 96×160 = 15360 blocks) **plus a
+  16-byte device watermark trailer** (same bytes as HEAD+0x3c), HEAD flags
+  0x30=1, 0x4c=3. HEAD+0x3c in native files = that trailer, not a payload digest.
+
+## Device state
+Restored: native tennis snapshot, WK 7420/5010 snapshots, GalleryCache,
+PosterDescriptorCache (from /var/tmp/s2backup/), fake v147 removed, clones
+F1F1/EEEE removed. Respring done. `/var/tmp/atxwrite` (signed, run from
+`/var/jb/usr/bin`), `/var/tmp/s2backup/` left for audit.
+
+## Viable next paths (pick one, don't mix)
+A. **Tweak (what Tendies16 must do):** hook gallery data source + preview
+   provider in PosterBoard/SpringBoard (e.g. `PBFPosterExtensionDataStore`
+   gallery configuration, `PBFPosterSnapshotManager`), append our
+   `ATXFaceGalleryItem`s and supply previews from generated ATX. Needs ElleKit
+   dylib + entitlements, no exploits.
+B. **PRS XPC client:** `com.apple.posterboardservices` (PRSService) exposes
+   `fetchGallery`, `pushPosterGalleryUpdate:completion:`,
+   `refreshSnapshotForGalleryItemsMatchingDescriptorIdentifier:extensionIdentifier:`,
+   `createPosterConfigurationForProviderIdentifier:posterDescriptorIdentifier:`,
+   plus `com.apple.posterboardservices.data-store.*` ops. Server side rejects
+   non-entitled clients ("rejecting client … isn't entitled") → sign the helper
+   with the matching entitlement; likely the shortest path to *applying* a
+   tendie poster even if the gallery tile is still missing.
+C. **MITM the gallery fetch** (server impersonation): deepest, network+turst
+   required; only if A/B fail.
