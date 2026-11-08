@@ -235,3 +235,20 @@ revert device state after experiments; logs must carry RECON identity.
 - Current device: emoji clone BBBB2222 present (harmless, visible as dup).
   LegacyPoster stack AAAA1111/BBBB1111 present but tile not appearing
   (LegacyPoster lacks .atx snapshot — consistent with the mechanism).
+
+## 🔥 SNAPSHOT FORMAT CONFIRMED (same session)
+- Pulled emoji snapshot to research/snapshot/emoji_snapshot.atx (262168 bytes).
+- Format: **ATX container** (magic `AAPL\r\n\x1a\n`, HEAD/FILL chunks — the same
+  ATX format we reversed in ABrake27 ImageIO research). HEAD carries tile
+  dims 337×600 + 16-byte digest; payload = ASTC-encoded blocks WITHOUT the
+  standard ASTC file header (dims live in HEAD).
+- astcenc not installed on PC yet (pacman -S astcenc-avx2).
+- **Finish line (next session):** render art → ASTC 337×600 blocks → wrap in
+  ATX mimicking the emoji sample byte-layout → place descriptor with snapshot
+  → tile with custom art. Validation question: HEAD digest (16B) — likely
+  MD5 of payload; verify by recomputing on the sample.
+- Also discovered: active posters carry RuntimeSnapshot-lock/home.atx under
+  configurations/<uuid>/versions/0/ — the render cache of CURRENT wallpapers.
+  Photos provider staticdescriptors carry SNAPSHOT_GALLERY_HERO-noHeader .atx.
+- Device state: emoji clone BBBB2222 LEFT IN PLACE (visible dup tile, proves
+  mechanism); LegacyPoster stack AAAA1111/BBBB1111 left (harmless).
