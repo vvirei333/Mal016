@@ -210,3 +210,28 @@ revert device state after experiments; logs must carry RECON identity.
   the extension). When it ships — reverse immediately.
 - Device PRISTINE (registry, ProviderInfo, descriptors, configurations,
   caches all restored; respring done). All backups intact.
+
+## 🔥 SESSION-1 BREAKTHROUGH (22:35, confirmed visually by Ivan)
+- Emoji descriptor CLONE (BBBB2222-3333-4444-8555-666677778888, straight cp -R
+  of 10A4C668 incl. `SNAPSHOT_GALLERY-withHeader-PROPERTIES*.atx`) **APPEARED
+  AS A TILE in the gallery** (Эмодзи section, duplicate of the original).
+- **Mechanism decoded: gallery tiles are driven by the pre-rendered
+  `SNAPSHOT_GALLERY-*.atx` snapshot INSIDE the descriptor.** Emoji poster
+  descriptors carry .atx + NO configurations/ + NO registry record + NO
+  ProviderInfo registration → tile appears anyway.
+- Therefore: local tile injection IS possible for any provider IF the
+  descriptor carries a valid .atx snapshot. WallpaperKit packs failed because
+  tendies don't ship .atx snapshots.
+- **Next steps (the finish line):**
+  1. Pull the emoji .atx → analyze format (ATX = Apple Texture Archive, we
+     have ATX/ASTC expertise in ABrake27! watermark check etc.)
+  2. Pull a WallpaperKit native tile snapshot if any exists (look for .atx
+     anywhere under Extensions) — maybe WK tiles also carry snapshots and
+     our earlier content-swap failed only because snapshot was untouched
+     (renders old art)!
+  3. Write snapshot generator (render CA wallpaper → atx) or swap-snapshot
+     approach: clone a WK descriptor wholesale (incl. any .atx) then replace
+     contents — test whether tile updates art.
+- Current device: emoji clone BBBB2222 present (harmless, visible as dup).
+  LegacyPoster stack AAAA1111/BBBB1111 present but tile not appearing
+  (LegacyPoster lacks .atx snapshot — consistent with the mechanism).
