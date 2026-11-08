@@ -330,3 +330,4 @@ Session 1 (this file's author) is DONE; user continues with a fresh AI.
   experiments; never run unsigned IPA from TG (Mal016 source is ours, built
   by us); exploits are out of scope (analysis/verification only).
 Good luck. — Session 1 (GLM-5.3-Flash)
+p.s. session-2: последний коммит сессии-1 = a773f4a. Всё выше — проверенные факты.
