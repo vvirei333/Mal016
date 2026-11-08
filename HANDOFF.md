@@ -60,3 +60,28 @@ revert device state after experiments; logs must carry RECON identity.
   galleryOptions/ATXFaceGallery keys; (3) idevicesyslog during gallery open
   filtered 'ATX|PaperBoard|snapshot|thumbnail'; (4) check whether tile art
   comes from Duet faceGallery preview assets, not the store.
+
+## Session-1 final addendum (post-mortem of probes)
+- Native per-descriptor `com.apple.posterkit.provider.contents.galleryOptions`
+  = ATXPosterDescriptorGalleryOptions (localizedTitle 'Коллекции', hero flag,
+  complications flags). Packs carry `otherMetadata` instead → cloned native
+  galleryOptions with custom title for Mario — still no tile.
+- Duet stream `/var/mobile/Library/DuetExpertCenter/streams/faceGallery/local/
+  815610501801543` (8MB binary, device-scoped header, contains 7400.DYNAMIC ×40
+  and native instance UUIDs ×3) — patched equal-length (B18666BC→5D800000 ×3) —
+  still no tile. Rolled back.
+- syslog during gallery open: NO CollectionsPoster process spawn at all; only
+  PhotosPosterProvider XPC. The gallery UI never touches foreign descriptors.
+- **Conclusion:** tile art/rows are provisioned through a channel that only
+  accepts descriptors registered in a trust store not yet located. Top
+  hypothesis: MobileAsset asset audit (com.apple.mobileassetd) or a PosterKit
+  SQLite/plist index inside SpringBoard container.
+- **Next session = binary RE (ABrake27 home turf):** extract
+  WallpaperKit/WallpaperFoundation/PaperBoard + PosterKit-related dylibs from
+  16.7.16 dyld cache (extracted_16716/ available, 479MB), grep for
+  ATXFaceGalleryItem/descriptorIdentifier/galleryOptions resolution, find the
+  trust check that gates foreign descriptors. Diff against 17.x would also
+  reveal what Nugget exploits.
+- Device state: fully pristine (Duet restored, descriptors removed, caches
+  purged). PC artifacts: /tmp/rsn/* (native galleryOptions/userInfo/Duet
+  backup), /tmp/pbpull/*, /tmp/mal0push/* scripts.
