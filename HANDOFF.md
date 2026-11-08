@@ -182,3 +182,11 @@ revert device state after experiments; logs must carry RECON identity.
   response schema is — the stream is its local persistence.
 - Repro assets: PC /tmp/rsn/*, /tmp/pbpull/*, /tmp/mal0push/*; device
   /var/tmp/{mz,go_mario,duet_backup,backup_4634}; packs in Mal016/packs/.
+
+## Session-1 external intel (final)
+- **Tendies16** — WIP jailbreak tweak (r/jailbreak post "PosterBoard for iOS 16",
+  id 1vul8kb), imports .tendies on iOS 16. No repo/public release yet.
+  WATCH: when released, reverse its mechanism immediately — it solves the
+  exact tile-registration problem we mapped. Reddit JSON blocked from PC;
+  use different UA/proxy or check manually.
+- Everything else (Nugget/Pocket-Poster/Cowabunga) = iOS 17+ only.
