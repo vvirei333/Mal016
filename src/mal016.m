@@ -1,6 +1,6 @@
-// Mal0.m — jailbreak utility for PosterBoard/MobileGestalt on iOS 16.x
+// mal016.m — jailbreak utility for PosterBoard/MobileGestalt on iOS 16.x
 // No exploits: requires root (Dopamine). Public APIs + posix_spawn for unzip.
-// Log: Documents/mal0.log, RECON header on every run.
+// Log: Documents/mal016.log, RECON header on every run.
 
 #import <Foundation/Foundation.h>
 #import <spawn.h>
@@ -9,7 +9,7 @@ extern char **environ;
 
 #define MG_PATH @"/var/containers/Shared/SystemGroup/systemgroup.com.apple.mobilegestaltcache/Library/Caches/com.apple.MobileGestalt.plist"
 #define PB_BASE @"/var/mobile/Containers/Data/Application"
-#define LOG_NAME @"Mal0.log"
+#define LOG_NAME @"Mal016.log"
 
 static NSString *gLogPath = nil;
 static void L(NSString *fmt, ...) NS_FORMAT_FUNCTION(1,2);
@@ -45,18 +45,18 @@ static void recon(void) {
 // ---------- gestalt ----------
 static NSDictionary *mgLoad(NSError **err) {
     NSData *d = [NSData dataWithContentsOfFile:MG_PATH];
-    if (!d) { *err = [NSError errorWithDomain:@"Mal0" code:1 userInfo:@{NSLocalizedDescriptionKey: @"cannot read MG plist (root?)"}]; return nil; }
+    if (!d) { *err = [NSError errorWithDomain:@"Mal016" code:1 userInfo:@{NSLocalizedDescriptionKey: @"cannot read MG plist (root?)"}]; return nil; }
     NSError *e = nil;
     id p = [NSPropertyListSerialization propertyListWithData:d options:NSPropertyListMutableContainersAndLeaves format:NULL error:&e];
-    if (!p) { if (e) { *err = e; } else { *err = [NSError errorWithDomain:@"Mal0" code:4 userInfo:@{NSLocalizedDescriptionKey: @"plist parse error"}]; } return nil; }
+    if (!p) { if (e) { *err = e; } else { *err = [NSError errorWithDomain:@"Mal016" code:4 userInfo:@{NSLocalizedDescriptionKey: @"plist parse error"}]; } return nil; }
     return p;
 }
 static BOOL mgSave(id plist, NSError **err) {
     NSData *d = [NSPropertyListSerialization dataWithPropertyList:plist format:NSPropertyListBinaryFormat_v1_0 options:0 error:nil];
-    if (!d) { *err = [NSError errorWithDomain:@"Mal0" code:2 userInfo:@{NSLocalizedDescriptionKey: @"plist serialize failed"}]; return NO; }
+    if (!d) { *err = [NSError errorWithDomain:@"Mal016" code:2 userInfo:@{NSLocalizedDescriptionKey: @"plist serialize failed"}]; return NO; }
     // atomic: write temp, copy metadata-preserving
     NSString *tmp = [MG_PATH stringByAppendingString:@".tt_tmp"];
-    if (![d writeToFile:tmp atomically:YES]) { *err = [NSError errorWithDomain:@"Mal0" code:3 userInfo:@{NSLocalizedDescriptionKey: @"write tmp failed"}]; return NO; }
+    if (![d writeToFile:tmp atomically:YES]) { *err = [NSError errorWithDomain:@"Mal016" code:3 userInfo:@{NSLocalizedDescriptionKey: @"write tmp failed"}]; return NO; }
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm removeItemAtPath:MG_PATH error:nil] ||
         ![fm moveItemAtPath:tmp toPath:MG_PATH error:err]) {
@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
         NSArray *args = [NSProcessInfo processInfo].arguments;
         if (args.count < 2) {
             fprintf(stderr, "TendieTool v0.1 — jailbreak PosterBoard/MG CLI (iOS 16.x)\n"
-                    "usage: Mal0 <recon|gestalt|tendie> [args]\n"); return 2;
+                    "usage: Mal016 <recon|gestalt|tendie> [args]\n"); return 2;
         }
         NSString *docs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
         gLogPath = [docs stringByAppendingPathComponent:LOG_NAME];
