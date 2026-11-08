@@ -85,3 +85,27 @@ revert device state after experiments; logs must carry RECON identity.
 - Device state: fully pristine (Duet restored, descriptors removed, caches
   purged). PC artifacts: /tmp/rsn/* (native galleryOptions/userInfo/Duet
   backup), /tmp/pbpull/*, /tmp/mal0push/* scripts.
+
+## Session-1 CONCLUSION (binary RE pass, same day)
+- Extracted from 16.7.16 dyld cache: PosterKit (1.8MB), PosterBoard (2.4MB),
+  PosterBoardServices (527KB) → mcm_research/pb16716/.
+- PosterBoardServices disasm reveals the mechanism: **PRSServer** with
+  fetchGallery / retrieveGallery / pushPosterGalleryUpdate /
+  loadGalleryOptionsWithError / storeGalleryOptions — **the lock-screen
+  gallery catalog is SERVER-FETCHED**. Local descriptor placement cannot add
+  gallery tiles: tiles appear only when the server catalog references them.
+  This conclusively explains why Nugget needs iOS 17+ (different local
+  mechanism there) and why all our local-side injections failed.
+- Local attack/extension surface identified (research note only):
+  `com.apple.posterboardservices.data-store.*` XPC methods
+  (deleteDescriptors / refreshConfigurations / refreshConfigurationSnapshot /
+  mutateSwitcherConfiguration / deleteDataStore / migration) +
+  `PRSService notifyPosterBoardOfApplicationUpdates` — unauthenticated
+  local XPC into the poster data store is a plausible content-injection
+  vector on 16.x. NOT developed (scope line); flagging for future audit.
+- Practical workaround remains: WallpaperKit content-SWAP of an installed
+  descriptor works mechanically (files land fine) but rendered tile did not
+  change even after MappedImageCache/ColorBoxesCache/GalleryCache purge —
+  rendering likely uses per-instance snapshots keyed by the SERVER instance
+  UUIDs (B18666BC-style), not on-disk UUIDs. Revisit only with a full
+  PaperBoard render-pipeline RE.
