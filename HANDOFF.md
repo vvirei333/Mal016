@@ -161,3 +161,24 @@ revert device state after experiments; logs must carry RECON identity.
   (shift tail, bump header u32) → tile in gallery.
 - This is the FINAL gate: everything else (descriptor placement,
   normalization, registration, galleryOptions) is already solved and scripted.
+
+## Session-1 FINAL VERDICT
+- Duet stream patch PERSISTS (not server-reverted, verified 60s+ after write,
+  no respring) — so server sync is NOT the gate.
+- Full stack deployed simultaneously (patched stream + descriptor +
+  configuration + ProviderInfo registration + caches purged) — still no tile.
+- Nested structure observed: protobuf field1 at top level contains ANOTHER
+  protobuf message with the same item UUID inside → items live at depth ≥2,
+  and there are likely per-item additional nested fields (instance records?)
+  the naive leaf swap missed.
+- **Device fully restored to pristine** (Duet from backup, descriptor/config
+  removed, ProviderInfo original 4-UUID, respring). Backups on device:
+  /var/tmp/duet_backup, /var/tmp/backup_4634.
+- **Next session (fresh context), single focused task:** recursive protobuf
+  parser of the Duet stream (depth ≥2, collect leaf items + their full
+  serialized envelopes), build complete record field map (844 items), THEN
+  generate a fully-formed record set (all nesting levels), insert, test.
+  Fallback: Ghidra on PosterKit PRSServer fetchGallery to see what the server
+  response schema is — the stream is its local persistence.
+- Repro assets: PC /tmp/rsn/*, /tmp/pbpull/*, /tmp/mal0push/*; device
+  /var/tmp/{mz,go_mario,duet_backup,backup_4634}; packs in Mal016/packs/.
