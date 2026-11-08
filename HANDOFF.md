@@ -146,3 +146,18 @@ revert device state after experiments; logs must carry RECON identity.
   restore ProviderInfo from /tmp/pbpull/wk_provider.plist).
 - Streams to reverse next: Duet record format (start: hexdump first 2 records,
   find count field at header, diff records of same provider to get field map).
+
+## Session-1 protobuf breakthrough (final)
+- Duet stream = **protobuf wire format**, 844 gallery items, fixed 8MiB alloc,
+  header: u32 LE 91624 (used-length?) + u32 0 + 8-byte timestamp; records
+  start at 0x60.
+- Record shape: optional `08 <section-varint>` prefix, then `12 <len> <item>`;
+  item = protobuf {1: variant-UUID (36B), 2: '<id>.DYNAMIC|STATIC',
+  3: provider-bundle-id, ...more fields}. 844 uuid-field matches confirm.
+- Parser progress: clean parse from 0x60 breaks at 0x2da (6 records) —
+  remaining fields (score? layout? sections?) need a full field-map walk.
+  Next: parse ALL items with per-item field walk (tolerate unknown wt),
+  build field map by frequency, then write record generator + insertion
+  (shift tail, bump header u32) → tile in gallery.
+- This is the FINAL gate: everything else (descriptor placement,
+  normalization, registration, galleryOptions) is already solved and scripted.
